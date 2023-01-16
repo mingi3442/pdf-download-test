@@ -1,25 +1,64 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { Box, Button, Container } from "@mui/material";
+import image1 from "./circe-denyer-W_8Tivmufmo-unsplash.jpg";
+import image2 from "./thomas-dils-_9zEZ7QBPiY-unsplash.jpg";
 
+import axios from "axios";
 function App() {
+  //토큰
+  const TOKEN: string = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4OSIsImlhdCI6MTY3Mzg2MDkyNCwiZXhwIjoxNjczODY4MTI0fQ.9DhrAW0aMxBnS-RoCu1h4S9TCjA4wmm8KqOeunahi6w";
+  // 로컬 서버 URL
+  const BASE_URL: string = "https://api-dev.passsign.kr";
+  //문서 id
+  const documentId: string = "90";
+  axios.interceptors.request.use(function (config) {
+    config.headers = {
+      Authorization: `Bearer ${TOKEN}`,
+    };
+    return config;
+  });
+  const onClick = () => {
+    axios.defaults.headers.common[`Authorization`] = `Bearer ${TOKEN}`;
+    axios
+      .get(`${BASE_URL}/api/document/download/${documentId}`)
+      .then((res) => res.data)
+      .then((res) => {
+        fetch(res.documentUrl, { method: "GET" })
+          .then((res) => {
+            return res.blob();
+          })
+          .then((blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `Document.pdf`); //or any other extension
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout((_) => {
+              window.URL.revokeObjectURL(url);
+            }, 60000);
+          })
+          .catch((err) => {
+            console.error("err: ", err);
+          });
+      });
+  };
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container>
+      <Box sx={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <h1>PDF 다운 받기 ~~~</h1>
+      </Box>
+      <Box sx={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+        <Button onClick={onClick} sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+          <Box>
+            <img src={image1} alt="너굴" width={400} />
+            <img src={image2} alt="너굴" width={400} />
+          </Box>
+          <Box>다운 받아줘잉</Box>
+        </Button>
+      </Box>
+    </Container>
   );
 }
 
